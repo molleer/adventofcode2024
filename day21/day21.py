@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from pathlib import Path
 
 lines = Path("./input.txt").read_text().split("\n")
@@ -71,10 +71,75 @@ def translate1(line: str) -> str:
     return arrows
 
 
+def arrows_executor(line: str) -> str:
+    pos = [2, 0]
+    output = ""
+    BUTTONS: Dict[Tuple[int, ...], str] = {
+        (1, 0): "^",
+        (2, 0): "A",
+        (0, 1): "<",
+        (1, 1): "v",
+        (2, 1): ">",
+    }
+    for char in line:
+        if char == "A":
+            output += BUTTONS[tuple(pos)]
+        elif char == ">":
+            pos[0] += 1
+        elif char == "<":
+            pos[0] -= 1
+        elif char == "v":
+            pos[1] += 1
+        elif char == "^":
+            pos[1] -= 1
+        else:
+            raise ValueError(char)
+        assert pos != [0, 0], "Panic!"
+    return output
+
+
+def num_executor(line: str) -> str:
+    pos = [2, 3]
+    output = ""
+    BUTTONS: Dict[Tuple[int, ...], str] = {
+        (0, 0): "7",
+        (1, 0): "8",
+        (2, 0): "9",
+        (0, 1): "4",
+        (1, 1): "5",
+        (2, 1): "6",
+        (0, 2): "1",
+        (1, 2): "2",
+        (2, 2): "3",
+        (1, 3): "0",
+        (2, 3): "A",
+    }
+    for char in line:
+        if char == "A":
+            output += BUTTONS[tuple(pos)]
+        elif char == ">":
+            pos[0] += 1
+        elif char == "<":
+            pos[0] -= 1
+        elif char == "v":
+            pos[1] += 1
+        elif char == "^":
+            pos[1] -= 1
+        else:
+            raise ValueError(char)
+        assert pos != [0, 3], "Panic!"
+    return output
+
+
 sum = 0
 for line in lines:
     orders = translate1(line)
     num = int("".join(filter(lambda x: x in "0123456789", line)))
+    print(num, len(orders))
     sum += num * len(orders)
 
 print(sum)
+
+# for line in lines:
+#     print(line)
+#     assert num_executor(arrows_executor(arrows_executor(translate1(line)))) == line
