@@ -25,40 +25,22 @@ def find_e(map=map) -> Tuple[int, int]:
 def run(map=map):
     start = find_s()
     end = find_e()
-    fringe = [(0, start)]
     lowest_score = dict()
-    current = fringe.pop()
+    current = start
+    count = 0
+    lowest_score[start] = count
 
-    while current and current[1] != end:
-        score, (x, y) = current
-        if (x, y) in lowest_score:
-            current = fringe.pop(0)
-            continue
-        lowest_score[(x, y)] = score
-
+    while current != end:
         for _x, _y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            (x_new, y_new) = (x + _x, y + _y)
-            if (x_new, y_new) not in lowest_score and map[y_new][x_new] != "#":
-                fringe.append((score + 1, (x_new, y_new)))
-
-        fringe = sorted(set(fringe))
-        current = fringe.pop(0)
-
-    shortest_path = dict()
-    while current[1] != start:
-        score, (x, y) = current
-
-        for _x, _y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            (x_new, y_new) = (x + _x, y + _y)
-            if (x_new, y_new) in lowest_score and score - lowest_score[
-                (x_new, y_new)
-            ] == 1:
-                shortest_path[current[1]] = current[0]
-                current = (lowest_score[(x_new, y_new)], (x_new, y_new))
+            (x, y) = current
+            new_pos = (x + _x, y + _y)
+            if new_pos not in lowest_score and map[new_pos[1]][new_pos[0]] != "#":
+                current = new_pos
                 break
 
-    shortest_path[start] = 0
-    return shortest_path
+        count += 1
+        lowest_score[current] = count
+    return lowest_score
 
 
 def get_neighbours(pos, neighbours, steps=1):
@@ -72,20 +54,23 @@ def get_neighbours(pos, neighbours, steps=1):
     return neighbours
 
 
-chat_steps = 2
-diff = 100
+diff = 50
 count = 0
+start = find_s()
+end = find_e()
 
 shortest_path = run()
 neighbours: Set[Tuple[int, int]] = set()
-get_neighbours((0, 0), steps=2, neighbours=neighbours)
+get_neighbours((0, 0), steps=6, neighbours=neighbours)
 for x, y in shortest_path.keys():
     for _x, _y in neighbours:
         next = (x + _x, y + _y)
+        if (x, y) == start and (_x, _y) == (2, 4):
+            print((shortest_path[next] - shortest_path[(x, y)] - abs(_x) - abs(_y)))
         if (
             next in shortest_path
             and (shortest_path[next] - shortest_path[(x, y)] - abs(_x) - abs(_y))
-            >= diff
+            == diff
         ):
             count += 1
 
