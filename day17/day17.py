@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Tuple
 
 lines = Path("./input.txt").read_text().split("\n")
 program = [int(x) for x in lines[4][9:].split(",")]
@@ -46,29 +45,29 @@ def run(a=init_registers[0], registers=init_registers, program=program):
     return ",".join([str(i) for i in output])
 
 
-cache: Dict[Tuple[int, int, int], bool] = dict()
-
-
-def run2(A):
+def run2(A, start: int):
     B = 0
-    i = 0
-    values = []
     program = [2, 4, 1, 3, 7, 5, 4, 2, 0, 3, 1, 5, 5, 5, 3, 0]
-    while A // 8 != 0:
+    i = len(program) - 1 - start
+    while A != 0:
+        B = ((A & 0b111) ^ 3) ^ (A >> ((A & 0b111) ^ 3)) ^ 5
         A >>= 3
-        B = (((A & 0b111) ^ 3) ^ (A >> (B + 3))) ^ 5
-        if (A, B, i) in cache:
-            return cache[(A, B, i)]
-        values.append((A, B, i))
-        if program[i] != B % 8:
-            for v in values:
-                cache[v] = False
-            return False
+        if B % 8 != program[i]:
+            return i
         i += 1
-    return i == len(program)
+    return i
 
 
-for i in range(0, 100_000_000, 8):
-    if run2(i):
-        print(i)
-        break
+def calc(n, i) -> int:
+    if i == 16:
+        return n
+    for j in range(8):
+        new_n = (n << 3) + j
+        if run2(new_n, i) == 16:
+            new_n = calc(new_n, i + 1)
+            if new_n != -1:
+                return new_n
+    return -1
+
+
+print(run(calc(0, 0)))
