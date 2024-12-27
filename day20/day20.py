@@ -43,35 +43,40 @@ def run(map=map):
     return lowest_score
 
 
-def get_neighbours(pos, neighbours, steps=1):
-    if steps == 0:
-        return neighbours
-    for _x, _y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        next = (pos[0] + _x, pos[1] + _y)
-        if next not in neighbours:
-            neighbours.add(next)
-            get_neighbours(next, steps=steps - 1, neighbours=neighbours)
+def get_neighbours(n):
+    neighbours = set()
+    for i in range(n + 1):
+        for j in range(n - i + 1):
+            neighbours.add((i, j))
+            neighbours.add((-i, j))
+            neighbours.add((i, -j))
+            neighbours.add((-i, -j))
     return neighbours
 
 
-diff = 50
 count = 0
 start = find_s()
 end = find_e()
 
+savings: Dict[int, Set[Tuple[Tuple[int, int], Tuple[int, int]]]] = dict()
+
 shortest_path = run()
-neighbours: Set[Tuple[int, int]] = set()
-get_neighbours((0, 0), steps=6, neighbours=neighbours)
+path_length = shortest_path[start]
+steps = 20
+
+neighbours = get_neighbours(steps)
+assert all([(abs(x) + abs(y)) <= steps for (x, y) in neighbours])
+
 for x, y in shortest_path.keys():
     for _x, _y in neighbours:
         next = (x + _x, y + _y)
-        if (x, y) == start and (_x, _y) == (2, 4):
-            print((shortest_path[next] - shortest_path[(x, y)] - abs(_x) - abs(_y)))
-        if (
-            next in shortest_path
-            and (shortest_path[next] - shortest_path[(x, y)] - abs(_x) - abs(_y))
-            == diff
-        ):
-            count += 1
+        if next in shortest_path:
+            short_cut_dist = abs(_x) + abs(_y)
+            saved = shortest_path[next] - shortest_path[(x, y)] - short_cut_dist
+            savings.setdefault(saved, set()).add(((x, y), next))
+
+for cost_save, saves in sorted(savings.items()):
+    if cost_save >= 100:
+        count += len(saves)
 
 print(count)
